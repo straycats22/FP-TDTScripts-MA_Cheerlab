@@ -1,26 +1,3 @@
-%% Fiber Photometry Epoch Averaging Example
-%
-% <html>
-% This example goes through fiber photometry analysis using techniques <br>
-% such as data smoothing, bleach detrending, and z-score analysis. <br>
-% The epoch averaging was done using TDTfilter. <br><br>
-% Author Contributions: <br>
-% TDT, David Root, and the Morales Lab contributed to the writing and/or conceptualization of the code. <br>
-% The signal processing pipeline was inspired by the workflow developed by <a href="https://doi.org/10.1016/j.celrep.2017.10.066">David Barker et al. (2017)</a> for the Morales Lab. <br>
-% The data used in the example were provided by David Root. <br><br>
-% Author Information: <br>
-% David H. Root <br>
-% Assistant Professor <br>
-% Department of Psychology & Neuroscience <br>
-% University of Colorado, Boulder <br>
-% Lab Website: <a href="https://www.root-lab.org">https://www.root-lab.org</a> <br>
-% david.root@colorado.edu <br><br>
-% About the authors: <br>
-% The Root lab and Morales lab investigate the neurobiology of reward, aversion, addiction, and depression. <br>
-% <br> TDT edits all user submissions in coordination with the contributing
-% author(s) prior to publishing.
-% </html>
-
 %% Housekeeping
 % Clear workspace and close existing figures.
 % Add data
