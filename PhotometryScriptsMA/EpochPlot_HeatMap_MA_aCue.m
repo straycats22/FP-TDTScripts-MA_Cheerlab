@@ -2,18 +2,18 @@
 % Clear workspace and close existing figures.
 % Add data
 clear all; clc;
-data = TDTbin2mat('D:\PhD\CheerLab\WIN76-REINST1_WIN77-EXT9', 'TYPE', {'epocs', 'scalars', 'streams'});
+data = TDTbin2mat('WIN91-FR1-5_WIN93-FR1-5', 'TYPE', {'epocs', 'scalars', 'streams'});
 
 %% Remove Last reward Value  
-% data.epocs.aRP_.onset(end)=[];
-% data.epocs.aRP_.offset(end)=[];
-% data.epocs.aRP_.data(end)=[];
-% data.epocs.aRP_.onset(1)=[];
-% data.epocs.aRP_.offset(1)=[];
-% data.epocs.aRP_.data(1)=[];
+data.epocs.aCu_.onset(end)=[];
+data.epocs.aCu_.offset(end)=[];
+data.epocs.aCu_.data(end)=[];
+data.epocs.aCu_.onset(1)=[];
+data.epocs.aCu_.offset(1)=[];
+data.epocs.aCu_.data(1)=[];
 
 % Extract rewarded nosepokes
-%data.epocs.aRP_.onset = setdiff(data.epocs.aRP_.onset , data.epocs.aCu_.onset);
+% data.epocs.aRP_.onset = setdiff(data.epocs.aRP_.onset , data.epocs.aCu_.onset);
 
 %% Setup the variables for the data you want to extract
 % We will extract two different stream stores surrounding the 'PtAB' epoch 
@@ -23,8 +23,8 @@ REF_EPOC = 'aCu/'; % Stimulation event to center on
 % STIM_EPOC = 'aCu/'; %Stimulation pulses
 STREAM_STORE1 = 'x405A' % name of the 405 store
 STREAM_STORE2 = 'x470A' % name of the 470 store
-TRANGE = [-5 15]; %window size [start time relative to epoc onset, entire duration]
-% ARANGE = [1 1];
+TRANGE = [-5 35]; %window size [start time relative to epoc onset, entire duration]
+% ARANGE = [-5 -1];
 
 BASELINE_PER = [-5 -1]; % baseline period before stim
 ARTIFACT405 = Inf;% variable created for artifact removal for 405 store
@@ -214,18 +214,24 @@ ylabel('Trial', 'FontSize', 12);
 % correctly
 XX = [ts2, fliplr(ts2)];
 YY = [mean(zall)-zerror, fliplr(mean(zall)+zerror)];
-
+Zmean = mean(zall);
 
 
 %% Find max values, AUC and Nº of spikes
 
 % Find max value of Z-scores
-M = max(YY)
 Mepoch = max(zall,[],2);
+M = mean(Mepoch)
+medianM = median(Mepoch)
 
 % Find AUC in TRANGE of Z-scores
-AUC(1,1) = trapz(mean(zall))%(:,ts2(10,-2)< 1 & ts2(10,:) > 0)));
-AUC(1,2)=trapz(mean(zall(:,ts2(1,:) < 2 & ts2(1,:) > 1)));
+AUC(1,1)=trapz(mean(zall(:,ts2(1,:) < -1 & ts2(1,:) > -5)));
+AUC(1,2)=trapz(mean(zall(:,ts2(1,:) > 0 & ts2(1,:) < 2)));
+AUC(1,3)=trapz(mean(zall(:,ts2(1,:) > 2 & ts2(1,:) < 30)))
+% AUC(1,4)=trapz(mean(zall(:,ts2(1,:) > 10 & ts2(1,:) < 15)))
+% AUC(1,5)=trapz(mean(zall(:,ts2(1,:) > 15 & ts2(1,:) < 20)))
+% AUC(1,6)=trapz(mean(zall(:,ts2(1,:) > 20 & ts2(1,:) < 25)))
+% AUC(1,7)=trapz(mean(zall(:,ts2(1,:) > 25 & ts2(1,:) < 30)))
 
 % Find number of spikes arround each epoch
 for k1 = 1:size(zall,1)
@@ -236,3 +242,27 @@ for k1 = 1:size(P,2)
     NrPks(k1) = size(P{k1},2);
 end
 AvgPeaks = mean(NrPks)
+
+%% Create a fitted curve of the averaged TTL-limited signal 
+
+[xData, yData] = prepareCurveData( ts2, Zmean );
+
+% Set up fittype and options.
+ft = fittype( 'smoothingspline' );
+opts = fitoptions( 'Method', 'SmoothingSpline' );
+opts.Normalize = 'on';
+opts.SmoothingParam = 0.997;
+[fitresult, gof] = fit( xData, yData, ft, opts );
+
+% Plot fit with data.
+figure( 'Name', 'Fit 1' );
+h = plot( fitresult, xData, yData );
+legend( h, 'Zmean', 'Fit 1', 'Location', 'NorthEast', 'Interpreter', 'none' );
+xlabel( 'Time s', 'Interpreter', 'none' );
+ylabel( 'F/F0', 'Interpreter', 'none' );
+grid on
+
+% Prepare arrays to export raw data
+coef=coeffvalues(fitresult);
+fittedZ = coef.coefs(:,4);
+

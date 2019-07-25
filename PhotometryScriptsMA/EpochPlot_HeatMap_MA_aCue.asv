@@ -2,29 +2,29 @@
 % Clear workspace and close existing figures.
 % Add data
 clear all; clc;
-data = TDTbin2mat('WIN78-FR1-6_WIN79-FR1-6', 'TYPE', {'epocs', 'scalars', 'streams'});
+data = TDTbin2mat('WIN76-PR1_WIN77-FR3-2', 'TYPE', {'epocs', 'scalars', 'streams'});
 
 %% Remove Last reward Value  
-data.epocs.bCu_.onset(end)=[];
-data.epocs.bCu_.offset(end)=[];
-data.epocs.bCu_.data(end)=[];
-data.epocs.bCu_.onset(1)=[];
-data.epocs.bCu_.offset(1)=[];
-data.epocs.bCu_.data(1)=[];
+data.epocs.aCu_.onset(end)=[];
+data.epocs.aCu_.offset(end)=[];
+data.epocs.aCu_.data(end)=[];
+data.epocs.aCu_.onset(1)=[];
+data.epocs.aCu_.offset(1)=[];
+data.epocs.aCu_.data(1)=[];
 
 % Extract rewarded nosepokes
-%data.epocs.bRP_.onset = setdiff(data.epocs.bRP_.onset , data.epocs.bCu_.onset);
+% data.epocs.aRP_.onset = setdiff(data.epocs.aRP_.onset , data.epocs.aCu_.onset);
 
 %% Setup the variables for the data you want to extract
 % We will extract two different stream stores surrounding the 'PtAB' epoch 
 % event. We are interested in a specific event code for the shock onset.
 
-REF_EPOC = 'bCu/'; % Stimulation event to center on
-% STIM_EPOC = aCu/'; %Stimulation pulses
-STREAM_STORE1 = 'V2_B' % name of the 405 store
-STREAM_STORE2 = 'B2_B' % name of the 470 store
+REF_EPOC = 'aCu/'; % Stimulation event to center on
+% STIM_EPOC = 'aCu/'; %Stimulation pulses
+STREAM_STORE1 = 'x405A' % name of the 405 store
+STREAM_STORE2 = 'x470A' % name of the 470 store
 TRANGE = [-5 35]; %window size [start time relative to epoc onset, entire duration]
-% ARANGE = [1 1];
+% ARANGE = [-5 -1];
 
 BASELINE_PER = [-5 -1]; % baseline period before stim
 ARTIFACT405 = Inf;% variable created for artifact removal for 405 store
@@ -194,7 +194,7 @@ plot(ts2, mean(zall), 'color',[0.8500, 0.3250, 0.0980], 'LineWidth', 3); hold on
 line([0 0], [min(YY*1.5), max(YY*1.5)], 'Color', [.7 .7 .7], 'LineWidth', 2)
 
 h = fill(XX, YY, 'b');
-set(h, 'facealpha',.25,'edgecolor','none')  
+set(h, 'facealpha',.25,'edgecolor','none')
 
 % Finish up the plot
 axis tight
@@ -218,7 +218,7 @@ Zmean = mean(zall);
 
 
 %% Find max values, AUC and Nº of spikes
- 
+
 % Find max value of Z-scores
 Mepoch = max(zall,[],2);
 M = mean(Mepoch)
@@ -228,17 +228,18 @@ medianM = median(Mepoch)
 AUC(1,1)=trapz(mean(zall(:,ts2(1,:) < -1 & ts2(1,:) > -5)));
 AUC(1,2)=trapz(mean(zall(:,ts2(1,:) > 0 & ts2(1,:) < 2)));
 AUC(1,3)=trapz(mean(zall(:,ts2(1,:) > 2 & ts2(1,:) < 30)))
-% AUC(1,4)=trapz(mean(zall(:,ts2(1,:) > 15 & ts2(1,:) < 20)))
-% AUC(1,5)=trapz(mean(zall(:,ts2(1,:) > 20 & ts2(1,:) < 25)))
-% AUC(1,6)=trapz(mean(zall(:,ts2(1,:) > 25 & ts2(1,:) < 30)))
+% AUC(1,4)=trapz(mean(zall(:,ts2(1,:) > 10 & ts2(1,:) < 15)))
+% AUC(1,5)=trapz(mean(zall(:,ts2(1,:) > 15 & ts2(1,:) < 20)))
+% AUC(1,6)=trapz(mean(zall(:,ts2(1,:) > 20 & ts2(1,:) < 25)))
+% AUC(1,7)=trapz(mean(zall(:,ts2(1,:) > 25 & ts2(1,:) < 30)))
 
 % Find number of spikes arround each epoch
-for M1 = 1:size(zall,1)
-    [pks,loc] = findpeaks(zall(M1,:),'MinPeakProminence',5);
-    P{M1} = [pks; loc];
+for k1 = 1:size(zall,1)
+    [pks,loc] = findpeaks(zall(k1,:),'MinPeakProminence',5);
+    P{k1} = [pks; loc];
 end
-for M1 = 1:size(P,2)
-    NrPks(M1) = size(P{M1},2);
+for k1 = 1:size(P,2)
+    NrPks(k1) = size(P{k1},2);
 end
 AvgPeaks = mean(NrPks)
 
@@ -254,9 +255,9 @@ opts.SmoothingParam = 0.997;
 [fitresult, gof] = fit( xData, yData, ft, opts );
 
 % Plot fit with data.
-figure( 'Name', 'Fit 1' );
+figure( 'Name', 'untitled fit 1' );
 h = plot( fitresult, xData, yData );
-legend( h, 'Zmean', 'Fit 1', 'Location', 'NorthEast', 'Interpreter', 'none' );
+legend( h, 'Zmean', ' fit 1', 'Location', 'NorthEast', 'Interpreter', 'none' );
 xlabel( 'Time s', 'Interpreter', 'none' );
 ylabel( 'F/F0', 'Interpreter', 'none' );
 grid on
@@ -264,4 +265,3 @@ grid on
 % Prepare arrays to export raw data
 coef=coeffvalues(fitresult);
 fittedZ = coef.coefs(:,4);
-

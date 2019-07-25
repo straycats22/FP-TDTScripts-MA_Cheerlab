@@ -2,7 +2,7 @@
 % Clear workspace and close existing figures.
 % Add data
 clear all; clc;
-data = TDTbin2mat('WIN78-FR1-6_WIN79-FR1-6', 'TYPE', {'epocs', 'scalars', 'streams'});
+data = TDTbin2mat('WIN82-FR3-9_WIN84-PR1', 'TYPE', {'epocs', 'scalars', 'streams'});
 
 %% Remove Last reward Value  
 data.epocs.bCu_.onset(end)=[];
@@ -21,8 +21,8 @@ data.epocs.bCu_.data(1)=[];
 
 REF_EPOC = 'bCu/'; % Stimulation event to center on
 % STIM_EPOC = aCu/'; %Stimulation pulses
-STREAM_STORE1 = 'V2_B' % name of the 405 store
-STREAM_STORE2 = 'B2_B' % name of the 470 store
+STREAM_STORE1 = 'v2_B' % name of the 405 store
+STREAM_STORE2 = 'b2_B' % name of the 470 store
 TRANGE = [-5 35]; %window size [start time relative to epoc onset, entire duration]
 % ARANGE = [1 1];
 
@@ -241,27 +241,16 @@ for M1 = 1:size(P,2)
     NrPks(M1) = size(P{M1},2);
 end
 AvgPeaks = mean(NrPks)
-
-%% Create a fitted curve of the averaged TTL-limited signal 
-
+%% Creat a fitted curve of the averaged TTL-limited signal 
 [xData, yData] = prepareCurveData( ts2, Zmean );
-
-% Set up fittype and options.
 ft = fittype( 'smoothingspline' );
 opts = fitoptions( 'Method', 'SmoothingSpline' );
 opts.Normalize = 'on';
 opts.SmoothingParam = 0.997;
 [fitresult, gof] = fit( xData, yData, ft, opts );
+% coef=coeffvalues(zmeanfittedmodel);
+% fittedZ = extractfield(coef,'coefs');
 
-% Plot fit with data.
-figure( 'Name', 'Fit 1' );
-h = plot( fitresult, xData, yData );
-legend( h, 'Zmean', 'Fit 1', 'Location', 'NorthEast', 'Interpreter', 'none' );
-xlabel( 'Time s', 'Interpreter', 'none' );
-ylabel( 'F/F0', 'Interpreter', 'none' );
-grid on
 
-% Prepare arrays to export raw data
-coef=coeffvalues(fitresult);
-fittedZ = coef.coefs(:,4);
+
 
